@@ -21,14 +21,17 @@ class NaiveBayesNominal:
 
         for idr, row in enumerate(X):
             for idx, x in enumerate(row):
-                if x >= 1:
-                    if idx not in self.model:
-                        self.model[idx] = [0,0]
-                    self.model[idx][y[idr]] += 1
+                if idx not in self.model:
+                    self.model[idx] = [[0, 0], [0, 0], [0, 0]]
+                self.model[idx][x][y[idr]] += 1
 
         for key in self.model:
-            self.model[key][1] /= self.y_yes * 1.0
-            self.model[key][0] /= (len(y) - self.y_yes) * 1.0
+            self.model[key][0][1] /= self.y_yes * 1.0
+            self.model[key][1][1] /= self.y_yes * 1.0
+            self.model[key][2][1] /= self.y_yes * 1.0
+            self.model[key][0][0] /= (len(y) - self.y_yes) * 1.0
+            self.model[key][1][0] /= (len(y) - self.y_yes) * 1.0
+            self.model[key][2][0] /= (len(y) - self.y_yes) * 1.0
 
     def predict_proba(self, X):
         result = []
@@ -36,12 +39,8 @@ class NaiveBayesNominal:
             flu_yes = 1
             flu_no = 1
             for idx, x in enumerate(row):
-                if x >= 1:
-                    flu_yes *= self.model[idx][1]
-                    flu_no *= self.model[idx][0]
-                else:
-                    flu_yes *= (1 - self.model[idx][1])
-                    flu_no *= (1 - self.model[idx][0])
+                flu_yes *= self.model[idx][x][1]
+                flu_no *= self.model[idx][x][0]
             self.norm = self.y_yes_prob * flu_yes + (1 - self.y_yes_prob) * flu_no
             flu_yes *= self.y_yes_prob
             flu_yes /= self.norm
