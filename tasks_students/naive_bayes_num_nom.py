@@ -17,7 +17,7 @@ print "Nominal dataset"
 X_flu_train, y_flu_train, X_flu_test = load_flu()
 
 # Implement and test Naive Bayes Classifier supporting categorical data
-nb = NaiveBayesNumNom()
+nb = NaiveBayesNumNom(True)
 nb.fit(X_flu_train, y_flu_train)
 
 # Use the previously implemented testing function

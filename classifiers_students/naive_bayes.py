@@ -1,15 +1,11 @@
 import numpy as np
-import math
 from scipy.stats import norm
 from sklearn.base import BaseEstimator
 
 
 class NaiveBayesNominal:
     def __init__(self):
-        # todo - names of attributes - use them
-        # self.classes_ = None
         self.model = dict()
-        # self.y_prior = []
         self.y_yes = 0
         self.y_yes_prob = 0
         self.norm = 1
@@ -45,7 +41,6 @@ class NaiveBayesNominal:
             flu_no *= (1 - self.y_yes_prob)
             flu_no /= self.norm
             result.append((flu_no, flu_yes))
-
         return result
 
     def predict(self, X):
@@ -56,27 +51,32 @@ class NaiveBayesNominal:
                 flu_pred.append(0)
             else:
                 flu_pred.append(1)
-
         return np.array(flu_pred)
 
+
 class NaiveBayesNumNom(BaseEstimator):
-    def __init__(self):
-        raise NotImplementedError
-
-    def fit(self, X, y):
-        raise NotImplementedError
-
-    def predict_proba(self, X):
-        raise NotImplementedError
-
-    def predict(self, X):
-        raise NotImplementedError
-
-
-class NaiveBayesGaussian:
     def __init__(self, is_cat=None, m=0.0):
         self.is_cat = is_cat
         self.m = m
+        self.nb = None
+
+    def fit(self, X, y):
+        if self.is_cat:
+            self.nb = NaiveBayesNominal()
+        else:
+            self.nb = NaiveBayesGaussian()
+
+        self.nb.fit(X, y)
+
+    def predict_proba(self, X):
+        return self.nb.predict_proba(X)
+
+    def predict(self, X):
+        return self.nb.predict(X)
+
+
+class NaiveBayesGaussian:
+    def __init__(self):
         self.model = dict()
         self.classes = set()
 
@@ -95,37 +95,21 @@ class NaiveBayesGaussian:
                     self.model[col] = dict()
 
                 for key in columns_by_keys:
-                    mean = self.mean(columns_by_keys[key])
-                    # mean = np.mean(columns_by_keys[key])
-                    std = self.stdev(columns_by_keys[key])
-                    # std = np.std(columns_by_keys[key])
+                    mean = np.mean(columns_by_keys[key])
+                    std = np.std(columns_by_keys[key])
                     self.model[col][key] = (mean, std)
 
     def predict_proba(self, X):
         result = []
         for row in X:
-            # todo - reduce containers
-            tuple = dict()
+            stats = dict()
             for key in self.classes:
                 proba = 1
                 for idx, x in enumerate(row):
-                    proba *= self.calculateProbability(x, self.model[idx][key][0], self.model[idx][key][1])
-                    # proba *= norm(self.model[idx][key][0], self.model[idx][key][1]).pdf(x)
-                tuple[key] = proba
-            result.append(tuple)
+                    proba *= norm(self.model[idx][key][0], self.model[idx][key][1]).pdf(x)
+                stats[key] = proba
+            result.append(stats)
         return result
-
-    def mean(self, numbers):
-        return sum(numbers)/float(len(numbers))
-
-    def stdev(self, numbers):
-        avg = self.mean(numbers)
-        variance = sum([pow(x-avg,2) for x in numbers])/float(len(numbers)-1)
-        return math.sqrt(variance)
-
-    def calculateProbability(self, x, mean, stdev):
-        exponent = math.exp(-(math.pow(x-mean,2)/(2*math.pow(stdev,2))))
-        return (1 / (math.sqrt(2*math.pi) * stdev)) * exponent
 
     def predict(self, X):
         pred = self.predict_proba(X)
