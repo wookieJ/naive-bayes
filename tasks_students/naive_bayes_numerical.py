@@ -21,11 +21,14 @@ X_iris_test = X_iris[n_train:, :]
 y_iris_test = y_iris[n_train:]
 
 # Implement and test Naive Bayes Classifier supporting categorical data
-mgnb = NaiveBayesGaussian()
-mgnb.fit(X_iris_train, y_iris_train)
+# mgnb = NaiveBayesGaussian()
+print X_iris_train
+print y_iris_train
+print X_iris_test
+# mgnb.fit(X_iris_train, y_iris_train)
 
-test_model(mgnb, X_iris_train, y_iris_train, False)
-test_model(mgnb, X_iris_test, y_iris_test, False)
+# test_model(mgnb, X_iris_train, y_iris_train, False)
+# test_model(mgnb, X_iris_test, y_iris_test, False)
 
 # accuracy:
 # 0.966666666667

@@ -17,13 +17,13 @@ print "Nominal dataset"
 X_flu_train, y_flu_train, X_flu_test = load_flu()
 
 # Implement and test Naive Bayes Classifier supporting categorical data
-# nb = NaiveBayesNumNom()
-# nb.fit(X_flu_train, y_flu_train)
+nb = NaiveBayesNumNom()
+nb.fit(X_flu_train, y_flu_train)
 
 # Use the previously implemented testing function
 # to evaluate the performance of the model
-# test_model(nb, X_flu_train, y_flu_train)
-# test_model(nb, X_flu_test)
+test_model(nb, X_flu_train, y_flu_train)
+test_model(nb, X_flu_test)
 
 # ground truth:
 # [0 1 1 1 0 1 0 1]
@@ -51,10 +51,6 @@ X_iris_train = X_iris[:n_train, :]
 y_iris_train = y_iris[:n_train]
 X_iris_test = X_iris[n_train:, :]
 y_iris_test = y_iris[n_train:]
-
-print X_iris_train
-print y_iris_train
-print X_iris_test
 
 # Implement and test Naive Bayes Classifier supporting categorical data
 mgnb = NaiveBayesNumNom()
