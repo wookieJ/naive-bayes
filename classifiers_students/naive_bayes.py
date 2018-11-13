@@ -27,7 +27,7 @@ class NaiveBayesNominal:
                 self.model[idx][x][y[idr]] += 1
 
         for key in self.model:
-            for i in range(2):
+            for i in range(3):
                 self.model[key][i][1] /= self.y_yes * 1.0
                 self.model[key][i][0] /= (len(y) - self.y_yes) * 1.0
 
@@ -52,11 +52,14 @@ class NaiveBayesNominal:
         flu_prob = self.predict_proba(X)
         flu_pred = []
         for flu in flu_prob:
-            flu_pred.append(0) if flu[0] > flu[1] else flu_pred.append(1)
+            if flu[0] > flu[1]:
+                flu_pred.append(0)
+            else:
+                flu_pred.append(1)
 
         return np.array(flu_pred)
 
-class NaiveBayesGaussian:
+class NaiveBayesNumNom(BaseEstimator):
     def __init__(self):
         raise NotImplementedError
 
@@ -70,7 +73,7 @@ class NaiveBayesGaussian:
         raise NotImplementedError
 
 
-class NaiveBayesNumNom(BaseEstimator):
+class NaiveBayesGaussian:
     def __init__(self, is_cat=None, m=0.0):
         self.is_cat = is_cat
         self.m = m
@@ -92,8 +95,10 @@ class NaiveBayesNumNom(BaseEstimator):
                     self.model[col] = dict()
 
                 for key in columns_by_keys:
-                    mean = np.mean(columns_by_keys[key])
-                    std = np.std(columns_by_keys[key])
+                    mean = self.mean(columns_by_keys[key])
+                    # mean = np.mean(columns_by_keys[key])
+                    std = self.stdev(columns_by_keys[key])
+                    # std = np.std(columns_by_keys[key])
                     self.model[col][key] = (mean, std)
 
     def predict_proba(self, X):
@@ -104,22 +109,33 @@ class NaiveBayesNumNom(BaseEstimator):
             for key in self.classes:
                 proba = 1
                 for idx, x in enumerate(row):
-                    proba *= norm(self.model[idx][key][0], self.model[idx][key][1]).pdf(x)
-                    # proba *= 1/(std * math.sqrt(2 * math.pi))
+                    proba *= self.calculateProbability(x, self.model[idx][key][0], self.model[idx][key][1])
+                    # proba *= norm(self.model[idx][key][0], self.model[idx][key][1]).pdf(x)
                 tuple[key] = proba
             result.append(tuple)
         return result
 
+    def mean(self, numbers):
+        return sum(numbers)/float(len(numbers))
+
+    def stdev(self, numbers):
+        avg = self.mean(numbers)
+        variance = sum([pow(x-avg,2) for x in numbers])/float(len(numbers)-1)
+        return math.sqrt(variance)
+
+    def calculateProbability(self, x, mean, stdev):
+        exponent = math.exp(-(math.pow(x-mean,2)/(2*math.pow(stdev,2))))
+        return (1 / (math.sqrt(2*math.pi) * stdev)) * exponent
+
     def predict(self, X):
         pred = self.predict_proba(X)
         result = []
-        # todo - better picking max value way
-        for p in pred:
-            if p[0] > p[1]:# and p[0] > p[2]:
-                result.append(0)
-            # elif p[1] > p[0] and p[1] > p[2]:
-            #     result.append(1)
-            else:
-                result.append(1)
+
+        for row in pred:
+            max = [0, row[0]]
+            for idr in row:
+                if row[idr] > max[1]:
+                    max = [idr, row[idr]]
+            result.append(max[0])
 
         return np.array(result)
