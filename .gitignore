@@ -1,2 +1,5 @@
 .idea
-.DS_Store
+*.pyc
+*egg-info/
+create_*.pex
+*.DS_Store
